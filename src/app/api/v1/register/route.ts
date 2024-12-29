@@ -1,26 +1,25 @@
 'use server';
 
-import { sha256 }         from "@/controllers/security/sha256";
 import { DatabaseLoader } from "@/controllers/database/load";
+import { DatabaseWriter } from "@/controllers/database/save";
+import { sha256 }         from "@/controllers/security/sha256";
 import { response }       from "@/controllers/Response"
+import { User }           from "@/objects/user";
+
 
 const loader: DatabaseLoader = new DatabaseLoader();
+const writer: DatabaseWriter = new DatabaseWriter();
 
 export default async function POST(req: Request): Promise<Response> {
     const {
-        userId,
-        userName,
-        userMail,
+        id,
+        name,
+        mail,
         password 
-    }: { 
-        userId:   string,
-        userName: string,
-        userMail: string
-        password: string 
-    } = await req.json();
+    }: User = await req.json();
 
-    const userDatabase: any[] = loader.userDatabase();
-    const existUser: undefined | any[] = userDatabase.find((user: any) => user['id'] == userId);
+    let userDatabase: any[] = loader.userDatabase();
+    const existUser: undefined | User[] = userDatabase.find((user: any) => user['id'] == id);
 
     if (existUser) {
         return response(
@@ -30,9 +29,9 @@ export default async function POST(req: Request): Promise<Response> {
     }
 
     if (
-        userId.replace(' ', '') == ""   || 
-        userName.replace(' ', '') == "" || 
-        userMail.replace(' ', '') == "" || 
+        id.replace(' ', '') == ""   || 
+        name.replace(' ', '') == "" || 
+        mail.replace(' ', '') == "" || 
         password.replace(' ', '') == ""
     ) { // 全てちゃんと入力されていなかったら
         return response(
@@ -42,9 +41,9 @@ export default async function POST(req: Request): Promise<Response> {
     }
 
     if (
-        userId.length   <= 3 ||
-        userName.length <= 1 ||
-        userMail.length <= 5 ||
+        id.length   <= 3 ||
+        name.length <= 1 ||
+        mail.length <= 5 ||
         password.length <= 4
     ) { // データの文字数が足りなかったりしたら
         return response(
@@ -53,14 +52,16 @@ export default async function POST(req: Request): Promise<Response> {
         );
     }
 
-    const userData: any = {
-        "id":       userId,
-        "name":     userName,
-        "mail":     userMail,
+    const userData: User = {
+        "id":       id,
+        "name":     name,
+        "mail":     mail,
         "password": sha256(password)
     };
 
+    userDatabase.push(userData);
 
+    writer.userDatabaseWrite(userDatabase);
 
     return response(
         true,
