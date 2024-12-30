@@ -1,8 +1,9 @@
 'use server';
 
-import { readFileSync } from "fs";
 import { userDatabasePath, sessionDatabasePath, noteDatabasePath } from "./config";
-import { init } from "next/dist/compiled/webpack/webpack";
+import { readFileSync }                                            from "fs";
+import { User }                                                    from "@/objects/user";
+import { Session }                                                 from "@/objects/session";
 
 export class DatabaseLoader {
     constructor() {
@@ -15,11 +16,11 @@ export class DatabaseLoader {
         }));
     }
 
-    public userDatabase(): Object[] {
+    public userDatabase(): User[] {
         return this.load(userDatabasePath);
     }
 
-    public sessionDatabase(): Object[] {
+    public sessionDatabase(): Session[] {
         return this.load(sessionDatabasePath);
     }
 

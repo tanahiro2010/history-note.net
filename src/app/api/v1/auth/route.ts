@@ -3,7 +3,6 @@ import { cookies }  from "next/headers";
 
 export async function GET(): Promise<Response> {
     try {
-        // 明示的な型定義を追加
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get('token');
 
@@ -24,7 +23,7 @@ export async function GET(): Promise<Response> {
 
             }
         );
-    } catch (error: unknown) {  // エラーの型も定義
+    } catch (error: unknown) {
         return response(
             false,
             "Internal server error"
